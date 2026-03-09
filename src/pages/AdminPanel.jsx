@@ -18,6 +18,7 @@ export default function AdminPanel() {
   const [activeTab, setActiveTab] = useState("upload");
   const [isDragging, setIsDragging] = useState(false);
   const [userToRemove, setUserToRemove] = useState(null);
+  const [songToDelete, setSongToDelete] = useState(null);
   const fileInputRef = useRef(null);
   const coverInputRef = useRef(null);
 
@@ -102,6 +103,17 @@ export default function AdminPanel() {
   const handleRemoveCover = () => {
     setCoverFile(null);
     setCoverPreview(null);
+  };
+
+  const handleDeleteSong = async (songId) => {
+    try {
+      await API.post(`/song/deleteSong/${songId}`);
+      setSongs((prev) => prev.filter((s) => s._id !== songId));
+      setSongToDelete(null);
+      toast.success("Song deleted");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to delete song");
+    }
   };
 
   const handleRemoveUser = async (userId) => {
@@ -267,6 +279,12 @@ export default function AdminPanel() {
                         by {s.uploadedBy?.username || "—"}
                       </span>
                     )}
+                    <button
+                      onClick={() => setSongToDelete(s)}
+                      className="text-red-400 hover:text-red-300 text-sm px-2 py-1 rounded hover:bg-red-500/10 transition shrink-0"
+                    >
+                      Delete
+                    </button>
                   </li>
                 ))}
               </ul>
@@ -321,6 +339,34 @@ export default function AdminPanel() {
           onComplete={handleCropComplete}
           onCancel={() => { setShowCropModal(false); setCoverPreview(null); }}
         />
+      )}
+
+      {songToDelete && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="glass-card p-6 rounded-2xl w-full max-w-sm animate-scaleIn">
+            <h3 className="text-lg font-bold mb-2">Delete song?</h3>
+            <p className="text-zinc-400 text-sm mb-2">
+              {songToDelete.title} — {songToDelete.artist}
+            </p>
+            <p className="text-zinc-500 text-xs mb-6">
+              This will remove the song from the library, playlists, and liked lists. This cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => handleDeleteSong(songToDelete._id)}
+                className="flex-1 py-2.5 rounded-xl bg-red-500/20 text-red-400 font-medium hover:bg-red-500/30 transition"
+              >
+                Delete
+              </button>
+              <button
+                onClick={() => setSongToDelete(null)}
+                className="flex-1 py-2.5 rounded-xl border border-zinc-600 font-medium hover:bg-zinc-800/50 transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       {userToRemove && (
