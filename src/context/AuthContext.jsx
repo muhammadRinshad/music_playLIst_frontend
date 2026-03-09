@@ -8,8 +8,8 @@ export const AuthProvider = ({ children }) => {
     JSON.parse(localStorage.getItem("user"))
   );
 
-  const login = async (email, password) => {
-    const res = await API.post("/login", { email, password });
+  const login = async (emailOrUsername, password) => {
+    const res = await API.post("/login", { emailOrUsername, password });
     // if(res.status === 200){
 
     // }
