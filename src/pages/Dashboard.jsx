@@ -4,6 +4,7 @@ import API from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import SongCard from "../components/SongCard";
+import { useInView } from "../hooks/useInView";
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -128,6 +129,13 @@ export default function Dashboard() {
   };
 
   const gridClass = "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3 sm:gap-4 md:gap-5 min-w-0 [&>*]:min-w-0";
+  const [loadMoreRef, loadMoreInView] = useInView("300px");
+
+  useEffect(() => {
+    if (loadMoreInView && songsHasMore && !songsLoadingMore && songs.length > 0) {
+      loadMoreSongs();
+    }
+  }, [loadMoreInView, songsHasMore, songsLoadingMore, songs.length, loadMoreSongs]);
 
   if (loading) {
     return (
@@ -190,6 +198,7 @@ export default function Dashboard() {
                       showAddToPlaylist
                       onAddToPlaylist={openModal}
                       onLikeChange={handleLikeChange}
+                      animateWhenPlaying
                     />
                   ))}
                 </div>
@@ -217,6 +226,7 @@ export default function Dashboard() {
                       showAddToPlaylist
                       onAddToPlaylist={openModal}
                       onLikeChange={handleLikeChange}
+                      animateWhenPlaying
                     />
                   ))}
                 </div>
@@ -244,6 +254,7 @@ export default function Dashboard() {
                       showAddToPlaylist
                       onAddToPlaylist={openModal}
                       onLikeChange={handleLikeChange}
+                      animateWhenPlaying
                     />
                   ))}
                 </div>
@@ -269,18 +280,22 @@ export default function Dashboard() {
               showAddToPlaylist
               onAddToPlaylist={openModal}
               onLikeChange={handleLikeChange}
+              animateWhenPlaying
             />
           ))}
         </div>
         {songsHasMore && (
-          <div className="flex justify-center mt-6 sm:mt-8">
-            <button
-              onClick={loadMoreSongs}
-              disabled={songsLoadingMore}
-              className="px-6 py-3 rounded-xl bg-zinc-800 dark:bg-zinc-800 text-sm font-medium hover:bg-zinc-700 dark:hover:bg-zinc-700 transition disabled:opacity-50"
-            >
-              {songsLoadingMore ? "Loading..." : "See more"}
-            </button>
+          <div ref={loadMoreRef} className="flex justify-center mt-6 sm:mt-8 py-4">
+            {songsLoadingMore ? (
+              <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <button
+                onClick={loadMoreSongs}
+                className="px-6 py-3 rounded-xl bg-zinc-800 dark:bg-zinc-800 text-sm font-medium hover:bg-zinc-700 dark:hover:bg-zinc-700 transition"
+              >
+                See more
+              </button>
+            )}
           </div>
         )}
         </>

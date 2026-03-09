@@ -1,6 +1,7 @@
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import API from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 import { usePlayer } from "../context/PlayerContext";
 import toast from "react-hot-toast";
 
@@ -8,11 +9,14 @@ export default function SongDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const { play, currentSong, isPlaying, togglePlay } = usePlayer();
+  const { user } = useAuth();
+  const { play, pause, currentSong, isPlaying, togglePlay } = usePlayer();
   const [song, setSong] = useState(location.state?.song ?? null);
   const [loading, setLoading] = useState(!song);
   const [isLiked, setIsLiked] = useState(song?.isLiked ?? false);
   const [likeCount, setLikeCount] = useState(song?.likeCount ?? 0);
+  const [playlists, setPlaylists] = useState([]);
+  const [showAddModal, setShowAddModal] = useState(false);
 
   useEffect(() => {
     if (song) {
@@ -33,9 +37,31 @@ export default function SongDetail() {
   }, [id, song, navigate]);
 
   useEffect(() => {
-    if (song && !currentSong) play(song);
-    else if (song && currentSong?._id !== song._id) play(song);
-  }, [song, currentSong, play]);
+    if (!song) return;
+    if (!currentSong || currentSong._id !== song._id) {
+      play(song, { autoPlay: false });
+    } else {
+      pause();
+    }
+  }, [song, currentSong, play, pause]);
+
+  useEffect(() => {
+    if (!user) return;
+    API.get(`/getPlayLists/${user.id}`)
+      .then((res) => setPlaylists(res.data || []))
+      .catch(console.error);
+  }, [user]);
+
+  const addToPlaylist = async (playlistId) => {
+    try {
+      await API.put(`/playList/addToPlayList/${playlistId}`, { song: song._id });
+      setShowAddModal(false);
+      toast.success("Added to playlist!");
+    } catch {
+      toast.error("Already in playlist");
+      setShowAddModal(false);
+    }
+  };
 
   const handleToggleLike = async (e) => {
     e.stopPropagation();
@@ -86,9 +112,9 @@ export default function SongDetail() {
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto animate-fadeSlideUp">
       <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
-        <div className={`w-full sm:w-56 sm:aspect-square rounded-2xl bg-gradient-to-br from-zinc-800 to-emerald-950/40 overflow-hidden shadow-xl shrink-0 ${currentSong?._id === song._id && isPlaying ? "song-card--playing" : ""}`} data-song-id={song._id}>
+        <div className="w-full sm:w-56 sm:aspect-square rounded-2xl bg-gradient-to-br from-zinc-800 to-emerald-950/40 overflow-hidden shadow-xl shrink-0" data-song-id={song._id}>
           {song.coverUrl ? (
-            <img src={song.coverUrl} alt="" className="w-full h-full object-cover" />
+            <img src={song.coverUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-6xl text-zinc-500">♪</div>
           )}
@@ -100,7 +126,7 @@ export default function SongDetail() {
           {song.duration != null && song.duration > 0 && (
             <p className="text-zinc-500 text-sm mt-2">{formatDuration(song.duration)}</p>
           )}
-          <div className="flex items-center gap-4 mt-6">
+          <div className="flex items-center gap-3 mt-6 flex-wrap">
             <button
               onClick={togglePlay}
               className={`w-14 h-14 rounded-full flex items-center justify-center text-white shrink-0 now-playing-bar__play-btn ${isPlaying ? "now-playing-bar__play-btn--playing" : ""}`}
@@ -122,9 +148,56 @@ export default function SongDetail() {
               <HeartIcon />
               <span className="font-medium tabular-nums">{likeCount}</span>
             </button>
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 p-3 rounded-xl hover:bg-zinc-800/80 transition text-zinc-400 hover:text-emerald-400"
+              title="Add to playlist"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              <span className="font-medium">Add to playlist</span>
+            </button>
           </div>
         </div>
       </div>
+
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-3 sm:p-4 animate-scaleIn overflow-y-auto">
+          <div className="glass-card p-6 rounded-2xl w-full max-w-sm shadow-2xl animate-scaleIn">
+            <h3 className="text-xl font-bold mb-1">Add to playlist</h3>
+            <p className="text-sm text-zinc-400 mb-5 truncate">
+              {song.title} — {song.artist}
+            </p>
+            {playlists.length === 0 ? (
+              <p className="text-zinc-400 text-sm py-4">
+                Create a playlist first from the Playlists page
+              </p>
+            ) : (
+              <div className="max-h-64 overflow-y-auto space-y-1 pr-1 -mr-1">
+                {playlists.map((p) => (
+                  <button
+                    key={p._id}
+                    onClick={() => addToPlaylist(p._id)}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-zinc-800/80 active:bg-zinc-700 transition text-left"
+                  >
+                    <div className="h-10 w-10 rounded-lg bg-zinc-800 flex items-center justify-center text-lg">
+                      ♪
+                    </div>
+                    <span className="font-medium truncate">{p.title}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+            <button
+              onClick={() => setShowAddModal(false)}
+              className="mt-5 w-full py-2.5 rounded-xl border border-zinc-600 text-sm font-medium hover:border-zinc-500 hover:bg-zinc-800/50 transition"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

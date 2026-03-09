@@ -9,7 +9,11 @@ export default function SongCard({
   onLikeChange,
   showAddToPlaylist,
   onAddToPlaylist,
-  variant = "card"
+  variant = "card",
+  animateWhenPlaying = false,
+  showRemoveInMenu = false,
+  onRemove,
+  playOnly = false
 }) {
   const navigate = useNavigate();
   const { play, currentSong, isPlaying } = usePlayer();
@@ -52,7 +56,7 @@ export default function SongCard({
   const handleCardClick = (e) => {
     if (menuRef.current?.contains(e.target)) return;
     play(song);
-    navigate(`/song/${song._id}`, { state: { song } });
+    if (!playOnly) navigate(`/song/${song._id}`, { state: { song } });
   };
 
   const HeartIcon = ({ size = "w-5 h-5" }) => (
@@ -73,34 +77,36 @@ export default function SongCard({
   );
 
   const isCurrentPlaying = currentSong?._id === song._id && isPlaying;
+  const showPlayingAnimation = isCurrentPlaying && animateWhenPlaying;
 
   if (variant === "row") {
+    const hasMenu = showAddToPlaylist || showRemoveInMenu;
     return (
       <div
         onClick={handleCardClick}
-        className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer group/row"
+        className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 cursor-pointer group/row"
         data-song-id={song._id}
       >
-        <div className={`w-10 h-10 rounded bg-zinc-800 shrink-0 overflow-hidden flex items-center justify-center group-hover/row:ring-2 group-hover/row:ring-emerald-500/30 transition ${isCurrentPlaying ? "song-card--playing" : ""}`}>
+        <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded bg-zinc-800 shrink-0 overflow-hidden flex items-center justify-center group-hover/row:ring-2 group-hover/row:ring-emerald-500/30 transition ${showPlayingAnimation ? "song-card--playing" : ""}`}>
           {song.coverUrl ? (
-            <img src={song.coverUrl} alt="" className="w-full h-full object-cover" />
+            <img src={song.coverUrl} alt="" className="w-full h-full object-cover" loading="lazy" />
           ) : (
-            <span className="text-lg opacity-60">♪</span>
+            <span className="text-base sm:text-lg opacity-60">♪</span>
           )}
         </div>
         <button
           onClick={handleToggleLike}
           disabled={loadingLike}
-          className="song-card__like-btn p-1.5 rounded-lg hover:bg-zinc-700/50 transition shrink-0 disabled:opacity-50 flex items-center gap-1.5"
+          className="song-card__like-btn p-1.5 rounded-lg hover:bg-zinc-700/50 transition shrink-0 disabled:opacity-50 flex items-center gap-1 sm:gap-1.5"
         >
           <HeartIcon />
-          <span className="song-card__like-count text-sm tabular-nums">{likeCount}</span>
+          <span className="song-card__like-count text-xs sm:text-sm tabular-nums">{likeCount}</span>
         </button>
         <div className="flex-1 min-w-0">
-          <p className="song-card__title font-medium truncate">{song.title}</p>
-          <p className="song-card__artist text-sm truncate">{song.artist}</p>
+          <p className="song-card__title font-medium truncate text-sm sm:text-base">{song.title}</p>
+          <p className="song-card__artist text-xs truncate">{song.artist}</p>
         </div>
-        {showAddToPlaylist && (
+        {hasMenu && (
           <div className="relative shrink-0" ref={menuRef} onClick={(e) => e.stopPropagation()}>
             <button
               onClick={(e) => { e.stopPropagation(); setMenuOpen((o) => !o); }}
@@ -109,13 +115,26 @@ export default function SongCard({
               <ThreeDotsIcon />
             </button>
             {menuOpen && (
-              <div className="absolute right-0 bottom-full mb-1 py-1 min-w-[140px] rounded-lg bg-zinc-800 border border-zinc-700 shadow-xl z-50">
-                <button
-                  onClick={(e) => { e.stopPropagation(); onAddToPlaylist?.(song); setMenuOpen(false); }}
-                  className="w-full px-4 py-2 text-left text-sm hover:bg-zinc-700/80 transition flex items-center gap-2"
-                >
-                  <span>+</span> Add to playlist
-                </button>
+              <div className="absolute right-0 top-full mt-1 py-1 min-w-[160px] rounded-lg bg-zinc-800 border border-zinc-700 shadow-xl z-50">
+                {showAddToPlaylist && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onAddToPlaylist?.(song); setMenuOpen(false); }}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-zinc-700/80 transition flex items-center gap-2"
+                  >
+                    <span>+</span> Add to playlist
+                  </button>
+                )}
+                {showRemoveInMenu && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); onRemove?.(song); setMenuOpen(false); }}
+                    className="w-full px-4 py-2 text-left text-sm hover:bg-red-500/20 text-red-400 transition flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Remove from playlist
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -127,7 +146,7 @@ export default function SongCard({
   return (
     <div
       onClick={handleCardClick}
-      className={`group song-card relative rounded-xl sm:rounded-2xl overflow-hidden min-w-0 transition-all duration-300 ease-out cursor-pointer ${isCurrentPlaying ? "song-card--playing" : ""}`}
+      className={`group song-card relative rounded-xl sm:rounded-2xl overflow-hidden min-w-0 transition-all duration-300 ease-out cursor-pointer ${showPlayingAnimation ? "song-card--playing" : ""}`}
       data-song-id={song._id}
     >
       <div className="relative aspect-square bg-gradient-to-br from-zinc-800 via-zinc-800/95 to-emerald-950/40 flex items-center justify-center overflow-hidden">
@@ -136,6 +155,7 @@ export default function SongCard({
             src={song.coverUrl}
             alt=""
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+            loading="lazy"
           />
         ) : (
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent" />

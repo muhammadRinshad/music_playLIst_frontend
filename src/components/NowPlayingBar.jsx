@@ -1,9 +1,30 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { usePlayer } from "../context/PlayerContext";
 
 export default function NowPlayingBar() {
+  const navigate = useNavigate();
   const { currentSong, isPlaying, currentTime, duration, volume, setVolume, togglePlay, seek, audioRef, barExpanded, setBarExpanded } = usePlayer();
   const progressRef = useRef(null);
+  const barRef = useRef(null);
+
+  useEffect(() => {
+    if (!barExpanded) return;
+    const handleClickOutside = (e) => {
+      if (barRef.current && !barRef.current.contains(e.target)) {
+        setBarExpanded(false);
+      }
+    };
+    const id = setTimeout(() => {
+      document.addEventListener("click", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside, { passive: true });
+    }, 0);
+    return () => {
+      clearTimeout(id);
+      document.removeEventListener("click", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [barExpanded, setBarExpanded]);
 
   if (!currentSong) return null;
 
@@ -28,8 +49,12 @@ export default function NowPlayingBar() {
     <>
       <audio ref={audioRef} src={currentSong.filePath} className="hidden" />
       {barExpanded ? (
-        <div className="now-playing-bar">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
+        <div ref={barRef} className="now-playing-bar">
+          <button
+            type="button"
+            onClick={() => navigate(`/song/${currentSong._id}`, { state: { song: currentSong } })}
+            className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden text-left cursor-pointer hover:opacity-90 transition-opacity"
+          >
             <div className={`now-playing-bar__cover ${isPlaying ? "now-playing-bar__cover--playing" : ""}`}>
               {currentSong.coverUrl ? (
                 <img src={currentSong.coverUrl} alt="" className="w-full h-full object-cover" />
@@ -37,11 +62,11 @@ export default function NowPlayingBar() {
                 <span className="text-base sm:text-lg md:text-xl opacity-60">♪</span>
               )}
             </div>
-          <div className="min-w-0 flex-1">
-            <p className="font-medium truncate text-xs sm:text-sm text-zinc-900 dark:text-white">{currentSong.title}</p>
-            <p className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 truncate">{currentSong.artist}</p>
-          </div>
-        </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium truncate text-xs sm:text-sm text-zinc-900 dark:text-white">{currentSong.title}</p>
+              <p className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 truncate">{currentSong.artist}</p>
+            </div>
+          </button>
 
         <div className="flex items-center gap-2 sm:gap-3 flex-[1.5] sm:flex-[2] min-w-0 max-w-[180px] sm:max-w-xs md:max-w-md lg:max-w-2xl">
           <button

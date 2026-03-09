@@ -541,7 +541,7 @@ body {
   position: fixed;
   bottom: calc(0.75rem + env(safe-area-inset-bottom));
   left: 0.75rem;
-  z-index: 50;
+  z-index: 51;
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 50%;
@@ -550,7 +550,6 @@ body {
   border: 2px solid rgba(255,255,255,0.3);
   box-shadow: 0 4px 16px rgba(0,0,0,0.2);
   animation: discSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-  bottom: calc(0.75rem + env(safe-area-inset-bottom));
 }
 @media (min-width: 640px) {
   .now-playing-disc {

@@ -26,14 +26,15 @@ export const PlayerProvider = ({ children }) => {
     localStorage.setItem("playerVolume", String(val));
   }, []);
 
-  const play = useCallback((song) => {
+  const play = useCallback((song, options = {}) => {
     if (song) {
-      if (lastPlayedIdRef.current !== song._id) {
+      const { autoPlay = true } = options;
+      if (autoPlay && lastPlayedIdRef.current !== song._id) {
         lastPlayedIdRef.current = song._id;
         API.post(`/song/recordPlay/${song._id}`).catch(() => {});
       }
       setCurrentSong(song);
-      setIsPlaying(true);
+      setIsPlaying(!!autoPlay);
     }
   }, []);
 
