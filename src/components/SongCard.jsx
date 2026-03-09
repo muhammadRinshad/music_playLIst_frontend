@@ -12,7 +12,7 @@ export default function SongCard({
   variant = "card"
 }) {
   const navigate = useNavigate();
-  const { play } = usePlayer();
+  const { play, currentSong, isPlaying } = usePlayer();
   const [isLiked, setIsLiked] = useState(song.isLiked || false);
   const [likeCount, setLikeCount] = useState(song.likeCount ?? 0);
   const [loadingLike, setLoadingLike] = useState(false);
@@ -72,13 +72,16 @@ export default function SongCard({
     </svg>
   );
 
+  const isCurrentPlaying = currentSong?._id === song._id && isPlaying;
+
   if (variant === "row") {
     return (
       <div
         onClick={handleCardClick}
         className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer group/row"
+        data-song-id={song._id}
       >
-        <div className="w-10 h-10 rounded bg-zinc-800 shrink-0 overflow-hidden flex items-center justify-center group-hover/row:ring-2 group-hover/row:ring-emerald-500/30 transition">
+        <div className={`w-10 h-10 rounded bg-zinc-800 shrink-0 overflow-hidden flex items-center justify-center group-hover/row:ring-2 group-hover/row:ring-emerald-500/30 transition ${isCurrentPlaying ? "song-card--playing" : ""}`}>
           {song.coverUrl ? (
             <img src={song.coverUrl} alt="" className="w-full h-full object-cover" />
           ) : (
@@ -124,7 +127,8 @@ export default function SongCard({
   return (
     <div
       onClick={handleCardClick}
-      className="group song-card relative rounded-xl sm:rounded-2xl overflow-hidden min-w-0 transition-all duration-300 ease-out cursor-pointer"
+      className={`group song-card relative rounded-xl sm:rounded-2xl overflow-hidden min-w-0 transition-all duration-300 ease-out cursor-pointer ${isCurrentPlaying ? "song-card--playing" : ""}`}
+      data-song-id={song._id}
     >
       <div className="relative aspect-square bg-gradient-to-br from-zinc-800 via-zinc-800/95 to-emerald-950/40 flex items-center justify-center overflow-hidden">
         {song.coverUrl ? (

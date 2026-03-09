@@ -224,6 +224,70 @@ body {
     linear-gradient(180deg, transparent 0%, rgba(245, 249, 246, 0.5) 100%);
 }
 
+/* Floating music notes - flow from song card in all directions when playing */
+.live-bg__notes {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.live-bg__note {
+  position: absolute;
+  left: var(--origin-x, 50%);
+  top: var(--origin-y, 50%);
+  transform: translate(-50%, -50%) translate(0, 0);
+  font-size: calc(1.25rem * var(--note-size, 1));
+  opacity: 0;
+  color: rgba(34, 197, 94, 0.45);
+  text-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+  animation: noteFlowRadial 11s ease-out infinite;
+  animation-delay: var(--note-delay, 0s);
+}
+.light .live-bg__note {
+  color: rgba(5, 150, 105, 0.55);
+  text-shadow: 0 0 16px rgba(5, 150, 105, 0.15);
+}
+@keyframes noteFlowRadial {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(0, 0) scale(0.5);
+  }
+  6% {
+    opacity: 0.75;
+    transform: translate(-50%, -50%) translate(
+      calc(var(--dir-x, 0) * 5vw),
+      calc(var(--dir-y, 0) * 5vh)
+    ) scale(1);
+  }
+  35% {
+    opacity: 0.5;
+    transform: translate(-50%, -50%) translate(
+      calc(var(--dir-x, 0) * 25vw),
+      calc(var(--dir-y, 0) * 25vh)
+    ) scale(1.05);
+  }
+  65% {
+    opacity: 0.25;
+    transform: translate(-50%, -50%) translate(
+      calc(var(--dir-x, 0) * 50vw),
+      calc(var(--dir-y, 0) * 50vh)
+    ) scale(0.95);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) translate(
+      calc(var(--dir-x, 0) * 75vw),
+      calc(var(--dir-y, 0) * 75vh)
+    ) scale(0.6);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-bg__note {
+    animation: none;
+    opacity: 0;
+  }
+}
 
 /* Now playing bar - premium colors & animations */
 .now-playing-bar {
@@ -241,7 +305,7 @@ body {
   display: flex;
   align-items: center;
   padding: 0 1rem;
-  gap: 0.5rem;
+  gap: 0.75rem;
   padding-bottom: env(safe-area-inset-bottom);
   animation: slideUpBar 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -249,14 +313,19 @@ body {
   .now-playing-bar {
     height: 4.5rem;
     padding: 0 1.5rem;
-    gap: 0.75rem;
+    gap: 1rem;
   }
 }
 @media (min-width: 768px) {
   .now-playing-bar {
     height: 5rem;
-    padding: 0 1.5rem;
-    gap: 1rem;
+    padding: 0 2rem;
+    gap: 1.75rem;
+  }
+}
+@media (min-width: 1024px) {
+  .now-playing-bar {
+    gap: 1.75rem;
   }
 }
 .dark .now-playing-bar {
@@ -449,6 +518,117 @@ body {
   box-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
 }
 
+.now-playing-bar__minimize-btn {
+  padding: 0.375rem;
+  border-radius: 0.5rem;
+  color: #52525b;
+  transition: color 0.2s, background 0.2s;
+}
+.now-playing-bar__minimize-btn:hover {
+  background: rgba(0,0,0,0.06);
+  color: #10b981;
+}
+.dark .now-playing-bar__minimize-btn {
+  color: #a1a1aa;
+}
+.dark .now-playing-bar__minimize-btn:hover {
+  background: rgba(255,255,255,0.08);
+  color: #34d399;
+}
+
+/* Floating disc - minimized state */
+.now-playing-disc {
+  position: fixed;
+  bottom: calc(0.75rem + env(safe-area-inset-bottom));
+  left: 0.75rem;
+  z-index: 50;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid rgba(255,255,255,0.3);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  animation: discSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  bottom: calc(0.75rem + env(safe-area-inset-bottom));
+}
+@media (min-width: 640px) {
+  .now-playing-disc {
+    width: 3rem;
+    height: 3rem;
+    left: 1rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}
+@media (min-width: 768px) {
+  .now-playing-disc {
+    width: 3.5rem;
+    height: 3.5rem;
+    left: 1.25rem;
+    bottom: calc(1rem + env(safe-area-inset-bottom));
+  }
+}
+.dark .now-playing-disc {
+  border-color: rgba(255,255,255,0.12);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+@keyframes discSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.now-playing-disc__inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #e4e4e7 0%, #d4d4d8 100%);
+}
+.dark .now-playing-disc__inner {
+  background: linear-gradient(135deg, #27272a 0%, #3f3f46 100%);
+}
+.now-playing-disc__inner--playing {
+  animation: discSpin 3s linear infinite;
+}
+@keyframes discSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .now-playing-disc__inner--playing {
+    animation: none;
+  }
+}
+
+.now-playing-disc__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.now-playing-disc__fallback {
+  font-size: 1rem;
+  opacity: 0.6;
+}
+@media (min-width: 640px) {
+  .now-playing-disc__fallback {
+    font-size: 1.25rem;
+  }
+}
+@media (min-width: 768px) {
+  .now-playing-disc__fallback {
+    font-size: 1.5rem;
+  }
+}
+
 /* Smooth scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -565,6 +745,41 @@ body {
 
 .song-card__like-btn:hover {
   background: color-mix(in srgb, var(--border) 30%, transparent);
+}
+
+/* Currently playing song card - breathing animation */
+.song-card--playing {
+  animation: cardBreathe 2.5s ease-in-out infinite;
+}
+@keyframes cardBreathe {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 24px 2px rgba(16, 185, 129, 0.25), 0 0 40px rgba(6, 182, 212, 0.15);
+  }
+}
+.light .song-card--playing {
+  animation: cardBreatheLight 2.5s ease-in-out infinite;
+}
+@keyframes cardBreatheLight {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 2px 12px rgba(5, 150, 105, 0.06);
+  }
+  50% {
+    transform: scale(1.02);
+    box-shadow: 0 0 28px 4px rgba(5, 150, 105, 0.2), 0 0 48px rgba(6, 182, 212, 0.12);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .song-card--playing {
+    animation: none;
+    transform: scale(1);
+    box-shadow: none;
+  }
 }
 
 /* React Easy Crop */

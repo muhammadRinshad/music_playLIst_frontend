@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { usePlayer } from "../context/PlayerContext";
 
 export default function NowPlayingBar() {
-  const { currentSong, isPlaying, currentTime, duration, volume, setVolume, togglePlay, seek, audioRef } = usePlayer();
+  const { currentSong, isPlaying, currentTime, duration, volume, setVolume, togglePlay, seek, audioRef, barExpanded, setBarExpanded } = usePlayer();
   const progressRef = useRef(null);
 
   if (!currentSong) return null;
@@ -27,15 +27,16 @@ export default function NowPlayingBar() {
   return (
     <>
       <audio ref={audioRef} src={currentSong.filePath} className="hidden" />
-      <div className="now-playing-bar">
-        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
-          <div className={`now-playing-bar__cover ${isPlaying ? "now-playing-bar__cover--playing" : ""}`}>
-            {currentSong.coverUrl ? (
-              <img src={currentSong.coverUrl} alt="" className="w-full h-full object-cover" />
-            ) : (
-              <span className="text-base sm:text-lg md:text-xl opacity-60">♪</span>
-            )}
-          </div>
+      {barExpanded ? (
+        <div className="now-playing-bar">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 overflow-hidden">
+            <div className={`now-playing-bar__cover ${isPlaying ? "now-playing-bar__cover--playing" : ""}`}>
+              {currentSong.coverUrl ? (
+                <img src={currentSong.coverUrl} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-base sm:text-lg md:text-xl opacity-60">♪</span>
+              )}
+            </div>
           <div className="min-w-0 flex-1">
             <p className="font-medium truncate text-xs sm:text-sm text-zinc-900 dark:text-white">{currentSong.title}</p>
             <p className="text-[10px] sm:text-xs text-zinc-500 dark:text-zinc-400 truncate">{currentSong.artist}</p>
@@ -73,7 +74,7 @@ export default function NowPlayingBar() {
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 md:gap-2 flex-1 max-w-24 md:max-w-32 shrink-0 justify-end">
+        <div className="flex items-center gap-1.5 md:gap-2 flex-1 max-w-24 md:max-w-32 shrink-0 justify-end pl-2 sm:pl-4 md:pl-8 lg:pl-8">
           <button
             onClick={() => setVolume(volume > 0 ? 0 : 1)}
             className="now-playing-bar__vol-btn"
@@ -99,8 +100,34 @@ export default function NowPlayingBar() {
             className="now-playing-bar__volume"
             title="Volume"
           />
+          <button
+            onClick={() => setBarExpanded(false)}
+            className="now-playing-bar__minimize-btn shrink-0"
+            title="Minimize"
+          >
+            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
         </div>
       </div>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setBarExpanded(true)}
+          className="now-playing-disc"
+          title="Open player"
+          aria-label="Open player"
+        >
+          <div className={`now-playing-disc__inner ${isPlaying ? "now-playing-disc__inner--playing" : ""}`}>
+            {currentSong.coverUrl ? (
+              <img src={currentSong.coverUrl} alt="" className="now-playing-disc__img" />
+            ) : (
+              <span className="now-playing-disc__fallback">♪</span>
+            )}
+          </div>
+        </button>
+      )}
     </>
   );
 }

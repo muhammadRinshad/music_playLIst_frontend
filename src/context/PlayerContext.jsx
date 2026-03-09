@@ -8,6 +8,7 @@ const DEFAULT_VOLUME = 1;
 export const PlayerProvider = ({ children }) => {
   const [currentSong, setCurrentSong] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [barExpanded, setBarExpanded] = useState(true);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(() => {
@@ -93,7 +94,9 @@ export const PlayerProvider = ({ children }) => {
     togglePlay,
     pause,
     seek,
-    audioRef
+    audioRef,
+    barExpanded,
+    setBarExpanded
   };
 
   return (

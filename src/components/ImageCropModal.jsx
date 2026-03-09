@@ -1,8 +1,10 @@
 import { useState, useCallback } from "react";
 import Cropper from "react-easy-crop";
 import { getCroppedImg } from "../utils/cropImage";
+import { usePlayer } from "../context/PlayerContext";
 
 export default function ImageCropModal({ imageSrc, onComplete, onCancel }) {
+  const { barExpanded } = usePlayer();
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
@@ -22,7 +24,7 @@ export default function ImageCropModal({ imageSrc, onComplete, onCancel }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/90 z-50 flex flex-col">
+    <div className="fixed inset-0 bg-black/90 z-[60] flex flex-col">
       <div className="flex-1 relative min-h-0">
         <Cropper
           image={imageSrc}
@@ -35,7 +37,7 @@ export default function ImageCropModal({ imageSrc, onComplete, onCancel }) {
           className="cropper-container"
         />
       </div>
-      <div className="p-4 border-t border-zinc-800 bg-zinc-900 flex flex-col gap-4">
+      <div className={`p-4 border-t border-zinc-800 bg-zinc-900 flex flex-col gap-4 ${barExpanded ? "pb-20 sm:pb-[5.5rem] md:pb-24" : ""}`}>
         <div className="flex items-center gap-4">
           <span className="text-sm text-zinc-400">Zoom</span>
           <input

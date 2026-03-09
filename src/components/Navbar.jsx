@@ -155,8 +155,8 @@ export default function Navbar() {
                     </div>
                   )}
                 </div>
-              </>
-            )}
+          </>
+        )}
           </div>
 
           {/* Mobile menu button */}
@@ -193,7 +193,7 @@ export default function Navbar() {
         {/* Mobile nav */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-zinc-200 dark:border-white/5 animate-fadeSlideUp space-y-4">
-            {user && (
+     {user && (
               <form onSubmit={(e) => { e.preventDefault(); handleSearchSubmit(e); setMobileMenuOpen(false); }} className="px-1">
                 <div className="relative">
                   <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">

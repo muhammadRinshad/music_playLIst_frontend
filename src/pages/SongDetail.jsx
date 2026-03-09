@@ -86,7 +86,7 @@ export default function SongDetail() {
   return (
     <div className="p-4 sm:p-6 max-w-2xl mx-auto animate-fadeSlideUp">
       <div className="flex flex-col sm:flex-row gap-6 sm:gap-8">
-        <div className="w-full sm:w-56 sm:aspect-square rounded-2xl bg-gradient-to-br from-zinc-800 to-emerald-950/40 overflow-hidden shadow-xl shrink-0">
+        <div className={`w-full sm:w-56 sm:aspect-square rounded-2xl bg-gradient-to-br from-zinc-800 to-emerald-950/40 overflow-hidden shadow-xl shrink-0 ${currentSong?._id === song._id && isPlaying ? "song-card--playing" : ""}`} data-song-id={song._id}>
           {song.coverUrl ? (
             <img src={song.coverUrl} alt="" className="w-full h-full object-cover" />
           ) : (
